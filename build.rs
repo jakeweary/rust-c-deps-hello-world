@@ -1,6 +1,25 @@
 use std::env;
 use std::path::PathBuf;
 
+use bindgen::callbacks::{IntKind, ParseCallbacks};
+
+#[derive(Debug)]
+struct Callbacks;
+
+impl ParseCallbacks for Callbacks {
+  fn int_macro(&self, name: &str, _value: i64) -> Option<IntKind> {
+    if name.starts_with("GLFW_") {
+      return Some(IntKind::Int);
+    }
+    None
+  }
+
+  // from bindgen::CargoCallbacks
+  fn include_file(&self, filename: &str) {
+    println!("cargo:rerun-if-changed={}", filename);
+  }
+}
+
 fn main() {
   let target = env::var("TARGET").unwrap();
   let out_dir = env::var("OUT_DIR").unwrap();
@@ -13,7 +32,7 @@ fn main() {
     .compile("glad");
 
   bindgen::Builder::default()
-    .parse_callbacks(Box::new(bindgen::CargoCallbacks))
+    .parse_callbacks(Box::new(Callbacks))
     .clang_arg("-std=c99")
     .clang_arg("-Ideps/include")
     .header("deps/deps.h")
