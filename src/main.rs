@@ -3,11 +3,14 @@ use std::os::raw::c_int;
 use std::ptr::null_mut;
 use std::time::Duration;
 
+use scopeguard::defer;
+
 mod c;
 
 fn main() {
   unsafe {
     c::glfwInit();
+    defer!(c::glfwTerminate());
 
     c::glfwWindowHint(c::GLFW_CONTEXT_VERSION_MAJOR as c_int, 4);
     c::glfwWindowHint(c::GLFW_CONTEXT_VERSION_MINOR as c_int, 6);
@@ -15,6 +18,7 @@ fn main() {
 
     let window_title = CString::new("hello world").unwrap();
     let window = c::glfwCreateWindow(640, 360, window_title.as_ptr(), null_mut(), null_mut());
+    defer!(c::glfwDestroyWindow(window));
 
     c::glfwMakeContextCurrent(window);
     c::glfwSwapInterval(1);
@@ -27,8 +31,5 @@ fn main() {
     c::glfwSwapBuffers(window);
 
     std::thread::sleep(Duration::from_secs(1));
-
-    c::glfwDestroyWindow(window);
-    c::glfwTerminate();
   }
 }
