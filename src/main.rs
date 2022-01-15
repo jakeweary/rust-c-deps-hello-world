@@ -1,7 +1,6 @@
 use std::ffi::CString;
 use std::os::raw::c_int;
 use std::ptr::null_mut;
-use std::time::Duration;
 
 use scopeguard::defer;
 
@@ -24,12 +23,13 @@ fn main() {
     c::glfwSwapInterval(1);
     c::gladLoadGL(Some(c::glfwGetProcAddress));
 
-    // https://github.com/rust-lang/rust-bindgen/issues/753
-    c::glad_glClearColor.unwrap()(0.7, 0.9, 0.1, 1.0);
-    c::glad_glClear.unwrap()(c::GL_COLOR_BUFFER_BIT);
+    while c::glfwWindowShouldClose(window) == c::GLFW_FALSE as c_int {
+      // https://github.com/rust-lang/rust-bindgen/issues/753
+      c::glad_glClearColor.unwrap()(0.7, 0.9, 0.1, 1.0);
+      c::glad_glClear.unwrap()(c::GL_COLOR_BUFFER_BIT);
 
-    c::glfwSwapBuffers(window);
-
-    std::thread::sleep(Duration::from_secs(1));
+      c::glfwSwapBuffers(window);
+      c::glfwPollEvents();
+    }
   }
 }
